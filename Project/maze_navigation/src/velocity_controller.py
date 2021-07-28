@@ -2,6 +2,7 @@
 
 # Import the Python library for ROS
 import rospy
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -18,7 +19,7 @@ from gazebo_msgs.msg import ModelState
 from gazebo_msgs.srv import SetModelState
 from gazebo_msgs.srv import GetModelState
 
-from std_msgs.msg import Float64, Float64MultiArray
+from std_msgs.msg import Float64MultiArray
 
 robot_x = -8.7
 robot_y = -8.3
@@ -55,23 +56,6 @@ class MoveRobot():
 		# Set a publish velocity rate of in Hz
 		self.rate = rospy.Rate(5)
 
-		""" self.points = []
-		if path_shape == 'oval':
-			self.ds = 0.1
-			angles = np.arange(0, 2*np.pi, np.pi/25)
-			for yaw in angles:
-				point = [oval_x*np.cos(yaw), oval_y*np.sin(yaw)]
-				self.points.append(point)
-				plt.scatter(*point, s=40, c='orange')
-		elif path_shape == 'spiral':
-			self.ds = 0.25
-			angles = np.arange(0, 6*np.pi, np.pi/25)
-			for yaw in angles:
-				point = [(spiral_growth_factor*yaw+0.5)*np.cos(yaw), (spiral_growth_factor*yaw+0.5)*np.sin(yaw)]
-				self.points.append(point)
-				plt.scatter(*point, s=40, c='orange')
-		self.next_point = 0 """
-
 		self.odom_sub = rospy.Subscriber('/odom', Odometry, self.callback_odometry)
 
 		self.target_angle_sub = rospy.Subscriber(
@@ -83,8 +67,6 @@ class MoveRobot():
 		self.pos_diffs = []
 
 		self.is_finished = False
-
-		self.is_stuck = False
 
 		self.linear_v_history = []
 
@@ -141,13 +123,17 @@ class MoveRobot():
 	def shutdown(self):
 		print("Shutdown!")
 
-		plt.title("Linear V")
-		plt.plot(self.linear_v_history)
-		plt.savefig('foo.png')
+		plt.title("Position")
+		plt.xlim([-10, 10])
+		plt.ylim([-10, 10])
+		plt.scatter(self.path_x, self.path_y, s=5)
+		plt.savefig('pos.png')
 		
+		plt.title("Linear V")
+		plt.xlim([0, len(self.linear_v_history)])
 		plt.ylim([0, 1])
 		plt.plot(self.linear_v_history)
-		plt.savefig('foo.png')
+		plt.savefig('v.png')
 
 		print(sum(self.linear_v_history) / len(self.linear_v_history))
 
